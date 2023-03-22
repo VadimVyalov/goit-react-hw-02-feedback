@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
 import FeedbackOptions from './FeedbackOptions';
+import Section from './Section';
+import Statistics from './Statistics';
+import Notification from './Notification';
+import Container from './Container';
 
 export class App extends Component {
   state = {
@@ -8,14 +12,14 @@ export class App extends Component {
     bad: 0,
   };
 
+  options = [
+    { id: 'b-01', state: 'good', caption: 'Гарно' },
+    { id: 'b-02', state: 'neutral', caption: 'Нейтрально' },
+    { id: 'b-03', state: 'bad', caption: 'Погано' },
+  ];
+
   onIncrement = idx => {
-    this.setState(prevState => {
-      const keys = Object.keys(prevState);
-      console.log(keys[idx]);
-      return {
-        [keys[idx]]: prevState[keys[idx]] + 1,
-      };
-    });
+    this.setState(prevState => ({ [idx]: prevState[idx] + 1 }));
   };
 
   countTotalFeedback = () => {
@@ -24,30 +28,38 @@ export class App extends Component {
   };
 
   countPositiveFeedbackPercentage = () => {
-    const total = this.countTotalFeedback();
-    return total
-      ? Math.round((this.state.good / this.countTotalFeedback()) * 100)
-      : 0;
+    const totalFeedback = this.countTotalFeedback();
+    if (!totalFeedback) return 0;
+    const goodFeedback = this.state.good;
+    const positiveFeedback =
+      Math.round((goodFeedback / totalFeedback) * 1000) / 10;
+    return positiveFeedback;
   };
-  render() {
-    // const { good, neutral, bad } = this.state;
-    return (
-      // <>
-      //   <div>
-      <FeedbackOptions
-        options={['Гарно', 'Середньо', 'Погано']}
-        onLeaveFeedback={this.onIncrement}
-      />
-      /* </div> */
 
-      /* <div>
-          <span>{good}</span>
-          <span>{neutral}</span>
-          <span>{bad}</span>
-          <span>{this.countTotalFeedback()}</span>
-          <span>{this.countPositiveFeedbackPercentage()}</span>
-        </div>
-      </> */
+  render() {
+    const { good, neutral, bad } = this.state;
+    return (
+      <Container>
+        <Section title="Залиште відгук">
+          <FeedbackOptions
+            options={this.options}
+            onLeaveFeedback={this.onIncrement}
+          />
+        </Section>
+        <Section title="Статистика">
+          {!this.countTotalFeedback() ? (
+            <Notification message={'відгуків немає'} />
+          ) : (
+            <Statistics
+              good={good}
+              neutral={neutral}
+              bad={bad}
+              total={this.countTotalFeedback()}
+              positivePercentage={this.countPositiveFeedbackPercentage()}
+            />
+          )}
+        </Section>
+      </Container>
     );
   }
 }
